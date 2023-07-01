@@ -1,0 +1,15 @@
+tappay.on_return:
+  path: '/tappay/{commerce_order}/{step}/return'
+  defaults:
+    _title: 'Tap Pay'
+    _controller: '\Drupal\tappay\Controller\TappayController::returnPage'
+  requirements:
+    _custom_access: '\Drupal\tappay\Controller\TappayController::access'
+    _module_dependencies: commerce_checkout
+  options:
+    parameters:
+      commerce_order:
+        type: entity:commerce_order
+    no_cache: TRUE
+
+    

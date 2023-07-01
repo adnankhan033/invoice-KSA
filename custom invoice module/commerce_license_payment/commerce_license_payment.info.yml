@@ -1,0 +1,5 @@
+name: 'commerce_license_payment'
+type: module
+description: 'Created custom module for commerce license payment'
+core_version_requirement: ^9.2 || ^10
+package: 'Custom'

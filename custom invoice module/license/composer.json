@@ -1,0 +1,13 @@
+{
+    "name": "license",
+    "type": "drupal-module",
+    "description": "license module",
+    "keywords": [
+    ],
+    "homepage": "https://www.drupal.org/project/license",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/license",
+        "source": "http://cgit.drupalcode.org/license",
+    },
+}

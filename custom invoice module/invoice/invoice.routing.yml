@@ -1,0 +1,7 @@
+invoice.invoice_assigned_task:
+  path: '/create/new/assigned/invoice'
+  defaults:
+    _form: '\Drupal\invoice\Form\InvoiceAssignedTask'
+    _title: 'Create New Invoice'
+  requirements:
+    _access: 'TRUE'

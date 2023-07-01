@@ -1,0 +1,193 @@
+<?php
+use Drupal\paragraphs\Entity\Paragraph;
+
+/**
+ * @param $variables
+ */
+function invoice_theme_preprocess_node(&$variables)
+{
+    if( $node = \Drupal::routeMatch()->getParameter('node'))
+    {
+        if($node->bundle()=='invoice'){
+            $nid = $node->id();
+            $supplier_name = '';
+            $client_address = '';
+            $commercial_reg = '';
+            $supplier_phone_number = '';
+            $client_phone_number = '';
+            $cr_no = '';
+            $official_address = '';
+            $phone_number = '';
+            $vat_number = '';
+            $company_logo = '';
+            $client_name = '';
+            $client_vat_reg_no = '';
+            $total;
+
+
+
+            if(!empty($nid)){
+                //                load client node 
+                $node = \Drupal\node\Entity\Node::load($nid);
+                $client_n_supplier = $node->field_select_client_or_add_new->getValue();
+                $client_n_supplier_id = $client_n_supplier[0]['target_id'];
+                if(!empty($client_n_supplier_id)){
+                    $load_client_n_supplier_node = \Drupal\node\Entity\Node::load($client_n_supplier_id);
+                    $client_name = $load_client_n_supplier_node->getTitle();
+                    $client_address = $load_client_n_supplier_node->field_address->getValue()[0]['value'];
+                    $commercial_reg = $load_client_n_supplier_node->field_commercial_registration->getValue()[0]['value'];
+                    $client_phone_number = $load_client_n_supplier_node->field_phone->getValue()[0]['value'];
+                    $client_vat_reg_no = $load_client_n_supplier_node->field_vat_registration_no->getValue()[0]['value'];
+
+                    $multiple_items = $node->get('field_add_more')->referencedEntities();
+                    $totalAmount = 0;
+                    $totalDiscount = 0;
+                    $totalVAT = 0;
+
+                    foreach ($multiple_items as $items_values) {
+                        // Access the value of the paragraph field.
+                        $loaded_items = \Drupal\paragraphs\Entity\Paragraph::load($items_values->id());
+
+                        $description = $loaded_items->field_work_description->value;
+                        $price = $loaded_items->field_price->value;
+                        $quantity = $loaded_items->field_qty->value;
+                        $discount = $loaded_items->field_discount->value;
+                        $taxable_amount = $loaded_items->field_total_taxable_amount->value;
+
+
+                        $totalAmount += ($price * $quantity)- $discount;
+                        $totalDiscount += $discount;
+
+                    }
+
+                    $vatPercentage = 0.15; // VAT percentage (15%)
+                    $vatAmount = $totalAmount * $vatPercentage; // Calculate the VAT amount
+                    $totalAmountWithoutVAT = $totalAmount - $vatAmount; // Calculate the total amount without VAT
+                    $total_n_vat_amount=$totalAmount + $vatAmount;
+                    // Display the results
+//                    echo "Total Amount: " . $totalAmount . "\n";
+//                    echo "VAT Amount: " . $vatAmount . "\n";
+//                    echo "total n VAT Amount: " . $total_n_vat_amount . "\n";
+//                    echo "Total Amount without VAT: " . $totalAmountWithoutVAT . "\n";
+//                    echo "Total Discount: " . $totalDiscount . "\n";
+
+                    $variables['total_amount'] = $totalAmount;
+                    $variables['total_discount_amount'] = $totalDiscount;
+                    $variables['total_tax_include_amount'] = $total_n_vat_amount;
+                    $variables['total_taxable_amount'] = $vatAmount;
+
+                    $supplier_id = $node->get('uid')->target_id;
+                    if(!empty($supplier_id)){
+                        $supplier_account = \Drupal\user\Entity\User::load($supplier_id);
+                        $user = \Drupal\user\Entity\User::load($supplier_account->id());
+                        $supplier_name = $user->getAccountName();
+
+                        $cr_no = $user->get('field_cr_no')->getValue()[0]['value'];
+                        $official_address = $user->get('field_official_address')->getValue()[0]['value'];
+                        $supplier_phone_number = $user->get('field_phone')->getValue()[0]['value'];
+                        //                        kint($supplier_phone_number);
+                        //                        exit;
+                        $vat_number = $user->get('field_vat_registration_no')->getValue()[0]['value'];
+                        $company_logo = $user->get('user_picture')->getValue()[0]['target_id'];
+
+                        $file = \Drupal\file\Entity\File::load($company_logo);
+                        if ($file) {
+                            $image_uri = $file->getFileUri();
+                            $image_url = file_create_url($image_uri);
+                            // Output the image URL or use it as needed
+                            $company_logo =$image_url;
+                        }
+
+                    }
+                }
+            }
+            //                        load supplier and client data and pass it to releated not   
+            $variables['supplier_and_client_data'] = 
+                ['supplier_name'=> $supplier_name,
+                 'client_name'=> $client_name,
+                 'client_address'=> $client_address,
+                 'commercia_reg'=> $commercial_reg,
+                 'client_phone_number'=> $client_phone_number,
+                 'client_vat_reg_no'=> $client_vat_reg_no,
+                 'cr_no'=> $cr_no,
+                 'official_address'=> $official_address,
+                 'supplier_phone_number'=> $supplier_phone_number,
+                 'vat_number'=> $vat_number,
+                 'company_logo'=> $company_logo,
+                ];
+        }
+    }
+    //   added style on invoice page
+    if( $node = \Drupal::routeMatch()->getParameter('node')){
+           if($node->bundle()=='invoice')
+           {$variables['#attached']['library'][] = 'invoice_theme/invoice_nodes_print';}
+      }
+
+}
+
+
+/**
+ * Implements hook_theme_suggestions_page_alter().
+ */
+function invoice_theme_theme_suggestions_page_alter(array &$suggestions, array $variables) {
+    if ($node = \Drupal::routeMatch()->getParameter('node')) {
+        $suggestions[] = 'page__' . $node->bundle();
+    }
+}
+
+
+function invoice_theme_preprocess_html(&$variables) {
+    $variables['attributes']['class'][] = ' app sidebar-mini ';
+}
+
+/**
+ * Implements hook_preprocess_page().
+ */
+function invoice_theme_preprocess_page(&$variables) {
+    $site_config = \Drupal::config('system.site');
+    $variables['site_name'] = $site_config->get('name');
+    $variables['site_slogan'] = $site_config->get('slogan');
+    // logo needs to be placed within specified folder
+    $variables['logopath'] = file_url_transform_relative(file_create_url(theme_get_setting('logo.url')));
+    $get_user_id = \Drupal::routeMatch()->getRawParameter('user');
+
+    if($account = \Drupal::currentUser())
+        //    if($account = \Drupal\user\Entity\User::load($get_user_id))
+    {
+        $variables['name'] = $account->getDisplayName();
+        $variables['userEmail'] = $account->getEmail();
+        $variables['uid'] = \Drupal::currentUser()->id();
+
+        $current_user = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+        $variables['cr_no']=  $current_user->get('field_cr_no')->getValue()[0]['value'];
+        $variables['official_address'] =  $current_user->get('field_official_address')->getValue()[0]['value'];
+        $variables['phone_number'] =  $current_user->get('field_phone')->getValue()[0]['value'];
+        $variables['vat_registration_no'] =  $current_user->get('field_vat_registration_no')->getValue()[0]['value'];
+
+
+        if($profile_picture = $current_user->get('user_picture')->getValue()[0]['target_id'])
+        {
+            $file = \Drupal\file\Entity\File::load($profile_picture);
+            $path = $file->getFileUri();
+            $url = $file->createFileUrl();  
+            $variables['supplier_image'] = $url;  
+
+        }
+    }
+}
+
+function invoice_theme_preprocess_user(&$variables) {
+    /** @var User $account */
+    $account = $variables['elements']['#user'];
+    $variables['username'] = $account->getDisplayName();
+    $variables['userEmail'] = $account->getEmail();
+    $variables['uid'] = \Drupal::currentUser()->id();
+    if($profile_picture = $account->get('user_picture')->getValue()[0]['target_id'])
+    {
+        $file = \Drupal\file\Entity\File::load($profile_picture);
+        $path = $file->getFileUri();
+        $url = $file->createFileUrl();  
+        $variables['picture'] = $url;
+    }
+
+}

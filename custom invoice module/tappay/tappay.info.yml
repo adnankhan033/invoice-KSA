@@ -1,0 +1,9 @@
+name: TaP Pay Payment Gateway
+type: module
+description: 'Created custom mdoule for Tap Pay payment gateway.'
+package: Commerce
+core_version_requirement: ^9.2 || ^10
+dependencies:
+  - commerce:commerce
+  - commerce:commerce_payment
+

@@ -1,0 +1,54 @@
+global: 
+  css: 
+    theme: 
+      assets/css/style.css: {}
+      assets/css/dark-style.css: {}
+      assets/css/skin-modes.css: {}
+      assets/css/transparent-style.css: {}
+      assets/css/icons.css: {}
+      assets/colors/color1.css: {}
+      css/style.css: {}
+      
+  js: 
+    assets/plugins/bootstrap/js/popper.min.js: {}
+    assets/js/jquery.sparkline.min.js: {}
+    assets/js/circle-progress.min.js: {}
+    assets/plugins/chart/Chart.bundle.js: {}
+    assets/plugins/chart/utils.js: {}
+    assets/plugins/peitychart/jquery.peity.min.js: {}
+    assets/plugins/peitychart/peitychart.init.js: {}
+    assets/plugins/select2/select2.full.min.js: {}
+    assets/plugins/datatable/js/jquery.dataTables.min.js: {}
+    assets/plugins/datatable/js/dataTables.bootstrap5.js: {}
+    assets/plugins/datatable/dataTables.responsive.min.js: {}
+    assets/plugins/echarts/echarts.js: {}
+    assets/plugins/sidemenu/sidemenu.js: {}
+    assets/js/sticky.js: {}
+    assets/plugins/sidebar/sidebar.js: {}
+    assets/plugins/p-scroll/perfect-scrollbar.js: {}
+    assets/plugins/p-scroll/pscroll.js: {}
+    assets/plugins/p-scroll/pscroll-1.js: {}
+    assets/js/apexcharts.js: {}
+    assets/js/index1.js: {}
+    assets/js/themeColors.js: {}
+    assets/js/custom.js: {}
+    assets/plugins/datatable/js/dataTables.buttons.min.js: {}
+    assets/plugins/datatable/js/buttons.bootstrap5.min.js: {}
+    assets/plugins/datatable/js/jszip.min.js: {}
+    assets/plugins/datatable/pdfmake/pdfmake.min.js: {}
+    assets/plugins/datatable/pdfmake/vfs_fonts.js: {}
+    assets/plugins/datatable/js/buttons.html5.min.js: {}
+    assets/plugins/datatable/js/buttons.print.min.js: {}
+    assets/plugins/datatable/js/buttons.colVis.min.js: {}
+    assets/plugins/datatable/responsive.bootstrap5.min.js: {}
+    js/custom.js: {}
+    js/printThis.js: {}
+    
+
+invoice_nodes_print: 
+  css: 
+    theme: 
+      css/invoiceStyle.css: {}
+      
+  dependencies:
+    - core/jquery

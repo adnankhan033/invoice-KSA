@@ -1,0 +1,209 @@
+<?php
+
+/**
+ * @file
+ * Contains invoice.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\user\Entity\User;
+use Drupal\node\Entity\Node;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Url;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\field\Entity\FieldStorageConfig;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\taxonomy\Entity\Term;
+
+
+
+ob_start();
+/**
+ * Implements hook_help().
+ */
+function invoice_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+            // Main module help for the invoice module.
+        case 'help.page.invoice':
+            $output = '';
+            $output .= '<h3>' . t('About') . '</h3>';
+            $output .= '<p>' . t('our custom module') . '</p>';
+            return $output;
+
+        default:
+    }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function invoice_theme() {
+    return [
+        'invoice' => [
+            'render element' => 'children',
+        ],
+    ];
+}
+
+
+
+function invoice_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+//            kint($form_id);
+    if($form_id =='node_client_form')
+    {     
+        $form['revision_information']['#prefix'] = '<div class="hidden">';
+        $form['revision_information']['#suffix'] = '</div>'; 
+    }
+    if($form_id =='node_invoice_edit_form')
+    {
+
+        $form['title']['#disabled'] = TRUE;
+        $form['field_qr_code']['#prefix'] = '<div class="hidden">';
+        $form['field_qr_code']['#suffix'] = '</div>'; 
+        
+    }
+    if($form_id =='node_invoice_form' )
+    {
+        
+  
+        $currentUserAccount = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+        $current_user_name = $currentUserAccount->getDisplayName();
+        $current_user_id = $currentUserAccount->id();
+
+        $crntDate = date('Y-m-d');
+//        $form['title']['widget'][0]['value']['#default_value'] ="$current_user_name - $crntDate";
+//        $form['title']['#disabled'] = TRUE;
+
+        $license_nodes = \Drupal::entityTypeManager()
+            ->getStorage('node')
+            ->loadByProperties(['type' => 'buy_license', 'uid' => $current_user_id]);
+
+        // Build the select list options array.
+        $options = [];
+        $current_date = new DrupalDateTime();
+        foreach ($license_nodes as $license_node) {
+            $options[$license_node->id()] = $license_node->getTitle();
+     
+            $created_date = $license_node->getCreatedTime();
+            $buy_date = DrupalDateTime::createFromTimestamp($created_date);
+
+            // Calculate the difference between the buy_date and current_date.
+            $interval = $current_date->diff($buy_date);
+
+            // Get the difference in days.
+            $days_difference = $interval->days;
+            $selected_plane = $license_node->get('field_select_license_type')->getValue()[0]['target_id'];
+            $selected_term = Term::load($selected_plane);
+
+            $plane_status = '';
+            $plane_message = '';
+            
+            if ($selected_term) {
+                $term_name = $selected_term->getName();
+                //                selected plane 1 year condition
+                if($term_name =='1 year'){
+                    // Check if the difference is less than 365 days (1 year).
+                    if ($days_difference < 365) {
+                        // Less than 1 year.
+                        //you have already subscription
+                        $plane_message ="You have 1 year already subscription</h2>";
+                        $plane_status = 'Activated';
+                    } else {
+                        //    you need to buy or renew plane
+                        // Greater than or equal to 1 year.
+                        $plane_message = "Your 1 year plane expired";
+                        
+                        $plane_status = "<div>Expired</div>";
+                    }
+                }  elseif($term_name =='2 year'){
+                    // Check if the difference is less than 365 days (1 year).
+                    if ($days_difference < 730) {
+                        // Less than 1 year.
+                        //you have already subscription
+                        $plane_message ="You have 2 year already subscription";
+                        $plane_status = 'Activated';
+                    } else {
+                        //    you need to buy or renew plane
+                        // Greater than or equal to 1 year.
+                        $plane_message ="Your 2 year plane expired";
+                        $plane_status = 'Expired';
+                    }
+                }
+            }
+
+        }
+        
+        if($plane_status =='Activated'){
+//        Activated plane
+            $form['status_heading'] = [
+                '#markup'=> "$plane_status <br>$plane_message",
+                '#weight'=> -1,
+            ];
+            
+        }else{
+//            expired plane
+             $form['status_heading'] = [
+                '#markup'=> "$plane_status <br>$plane_message",
+                 '#weight'=> -1,
+            ];
+                $form['actions']['submit']['#disabled'] = TRUE;
+        }
+        
+        $baseUrl = Url::fromRoute('<front>')->setAbsolute()->toString();
+
+        $current_user = \Drupal::currentUser();
+        $supplier_current_name = $current_user->getAccountName();
+        //        $current_sup_three_letters =         substr($supplier_current_name, 0, 3);
+        $current_sup_three_letters = strtoupper(substr($supplier_current_name, 0, 3));
+        // Get the entity type manager
+        $entityTypeManager = \Drupal::entityTypeManager();
+
+        // Load the storage for the 'node' entity type
+        $nodeStorage = $entityTypeManager->getStorage('node');
+        // Query the last node of the 'invoice' content type
+        $query = $nodeStorage->getQuery()
+            ->condition('type', 'invoice')
+            ->sort('created', 'DESC')
+            ->range(0, 1);
+
+        $invoiceNids = $query->execute();
+        // Load the last 'invoice' node
+        $lastInvoiceNode = reset($invoiceNids) ? $nodeStorage->load(reset($invoiceNids)) : NULL;
+        $new_invoice_nid = $lastInvoiceNode->id();
+        $qr_code_url = $baseUrl."node/".$new_invoice_nid+1;
+        $form['field_qr_code']['widget'][0]['value']['#default_value'] =$qr_code_url;
+        $lastInvoiceNumber = $lastInvoiceNode ? $lastInvoiceNode->getTitle() : NULL;
+        // Increment the numeric part by one
+        $nextInvoiceNumber = $supplier_short_name .' - '. ($numericPart + 1);
+
+        $get_invoice_number = explode("-", $lastInvoiceNumber);
+        $get_invoice_number = trim($get_invoice_number[2]);
+        $nextInvoiceNumber = (int)$get_invoice_number+1;
+        //                kint( $nextInvoiceNumber);
+
+        $form['title']['widget'][0]['value']['#default_value'] ='INV-'.$current_sup_three_letters.'-'.$nextInvoiceNumber;
+        $form['title']['#disabled'] = TRUE;
+        $form['field_qr_code']['#prefix'] = '<div class="hidden">';
+        $form['field_qr_code']['#suffix'] = '</div>';
+        $form['revision_information']['#prefix'] = '<div class="hidden">';
+        $form['revision_information']['#suffix'] = '</div>'; 
+
+    }
+}
+
+
+
+function invoice_preprocess_paragraph(&$variables) {
+    // add invoice serial number for the table
+    $paragraph = $variables['paragraph'];
+    $parent = $paragraph->getParentEntity();
+    // get all paragraph IDs sorted by weight
+    $weights = array_map( function($a) {return $a['target_id'];}, $parent->get($paragraph->get('parent_field_name')->value)->getValue());
+    // find the weight of my paragraph ID
+    $weight = array_search($paragraph->id(), $weights);
+    // ...do stuff with $weight... e.g. assign it to a Twig variable
+    $variables['weight'] = $weight +=1;
+
+}
+

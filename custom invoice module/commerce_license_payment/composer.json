@@ -1,0 +1,13 @@
+{
+    "name": "commerce_license_payment",
+    "type": "drupal-module",
+    "description": "Created custom module for commerce license payment",
+    "keywords": [
+    ],
+    "homepage": "https://www.drupal.org/project/commerce_license_payment",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/commerce_license_payment",
+        "source": "http://cgit.drupalcode.org/commerce_license_payment",
+    },
+}

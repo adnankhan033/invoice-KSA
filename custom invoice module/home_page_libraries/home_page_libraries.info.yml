@@ -1,0 +1,8 @@
+name: 'home_page_libraries'
+type: module
+description: 'Added libraries only for front page'
+core_version_requirement: ^9.2 || ^10
+package: 'Custom'
+
+
+

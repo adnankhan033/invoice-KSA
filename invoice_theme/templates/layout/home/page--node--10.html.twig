@@ -1,0 +1,125 @@
+
+<!-- Header 
+============================================= -->
+<header id="home">
+
+    <!-- Start Navigation -->
+    <nav class="navbar navbar-default navbar-sticky bootsnav">
+
+        <div class="container">
+
+            <!-- Start Header Navigation -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-menu">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+                {{ page.home_logo }}
+            </div>
+            <!-- End Header Navigation -->
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <!--                Home page menu-->
+            {{ page.home_menu }}
+            <!-- /.navbar-collapse -->
+        </div>
+
+    </nav>
+    <!-- End Navigation -->
+
+</header>
+<!-- End Header -->
+
+<!-- Start Banner 
+============================================= -->
+{{ page.home_slider}}
+<!-- End Banner -->
+
+<!-- Start Our About
+============================================= -->
+<div id="about" class="about-area full-width inc-shadow mt default-padding bottom-less">
+    <div class="container">
+        <div class="row">
+            <!-- Start About -->
+            {{ drupal_entity('block', 'homeaboutus') }}
+            <!-- End About -->
+
+        </div>
+    </div>
+</div>
+<!-- End Our About -->
+
+
+<!-- Start Portfolio
+============================================= -->
+
+<!-- End Portfolio -->
+<!-- Start Testimonial & Faq
+============================================= -->
+<div class="testimonials-faq about-area default-padding">
+    <div class="container">
+        <div class="row">
+            <!-- Start Testimonials -->
+            <div class="col-md-6 management-quote">
+                {{ drupal_entity('block', 'testimonial') }}
+            </div>
+            <!-- End Testimonials -->
+
+            <!-- Start Faq -->
+            <div class="col-md-6 faq-area">
+                {{ drupal_entity('block', 'answerquestions') }}
+
+
+            </div>
+            <!-- End Faq -->
+        </div>
+    </div>
+</div>
+<!-- End Testimonial & Faq -->
+
+<!-- Start Pricing Area
+============================================= -->
+<div id="pricing" class="pricing-area bg-gray default-padding bottom-less">
+    <div class="container">
+        {{ drupal_entity('block', 'ourpricing') }}
+        {{ drupal_entity('block', 'views_block__home_planes_block_1') }}
+
+    </div>
+</div>
+<!-- End Pricing Area -->
+
+<!-- Start Call Back Form
+============================================= -->
+<div class="callback-area default-padding">
+
+    <div class="container">
+        <div class="row">
+            <!-- Start Form -->
+            <div class="col-md-12 col-sm-12 col-lg-12">
+                <div class="side-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <!--                    contact us form header-->
+                {{ drupal_entity('block', 'contactformheader') }}
+                {{ drupal_entity('block', 'webform') }}
+
+            </div>
+            <!-- End Form -->
+        </div>
+    </div>
+</div>
+<!-- End Call Back Form -->
+
+<!-- Start Footer 
+============================================= -->
+<footer class="clients-area bg-dark ">
+
+    <!-- End Footer Top -->
+    <div class="container">
+        <div class="row">
+            {{ page.home_footer}}
+        </div>
+    </div>
+
+
+</footer>

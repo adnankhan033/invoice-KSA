@@ -1,0 +1,13 @@
+{
+    "name": "login_registration_otp",
+    "type": "drupal-module",
+    "description": "Created OTP module for login and registration form",
+    "keywords": [
+    ],
+    "homepage": "https://www.drupal.org/project/login_registration_otp",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/login_registration_otp",
+        "source": "http://cgit.drupalcode.org/login_registration_otp",
+    },
+}

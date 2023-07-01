@@ -1,0 +1,257 @@
+<?php
+
+/**
+ * @file
+ * Contains login_registration_otp.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use \Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Form\FormBase;
+use Drupal\user\Entity\User;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
+
+use Drupal\Core\Ajax\Response;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\HtmlCommand;
+use Drupal\Core\Ajax\AlertCommand;
+use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Ajax\ReplaceCommand;
+
+
+/**
+ * Implements hook_help().
+ */
+function login_registration_otp_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+            // Main module help for the login_registration_otp module.
+        case 'help.page.login_registration_otp':
+            $output = '';
+            $output .= '<h3>' . t('About') . '</h3>';
+            $output .= '<p>' . t('Created OTP module for login and registration form') . '</p>';
+            return $output;
+
+        default:
+    }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function login_registration_otp_theme() {
+    return [
+        'login_registration_otp' => [
+            'render element' => 'children',
+        ],
+    ];
+}
+
+function login_registration_otp_form_alter(&$form, FormStateInterface $form_state, $form_id)
+{
+    //kint($form_id);
+    //    user_register_form
+    if($form_id == 'user_login_form' ){
+        $form['actions']['submit']['#submit'][] = 'otp_handler';
+    }
+    else if($form_id == 'user_register_form' ){
+
+        //        $form['mobile_number'] = [
+        //            '#type' => 'tel',
+        //            '#title' => t('Mobile Number'),
+        //            '#required' => TRUE,
+        //        ];
+
+
+        // Add Send OTP button.
+        $form['send_otp'] = [
+            '#type' => 'submit',
+            '#value' => t('Send OTP'),
+            '#ajax' => [
+                'callback' => 'invoice_otp_send_otp_callback',
+                'wrapper' => 'custom-markup-wrapper',
+                'progress' => [
+                    'type' => 'throbber',
+                    'message' => t('Sending OTP...'),
+                ],
+            ],
+            '#attributes' => [
+                'onclick' => 'disableSendOTPButton(this)',
+            ],
+        ];
+//show message
+        $form['message'] = [
+            '#type' => 'markup',
+            '#prefix' => '<div id="custom-markup-wrapper">',
+            '#suffix' => '</div>',
+        ];
+
+        // Add OTP field.
+        $form['otp'] = [
+            '#type' => 'textfield',
+            '#title' => t('OTP'),
+            '#required' => TRUE,
+            '#maxlength' => 4,
+            '#attributes' => ['placeholder' => t('****')],
+            '#states' => [
+                'visible' => [
+                    ':input[name="otp_verification"]' => ['checked' => TRUE],
+                ],
+            ],
+        ];
+
+
+        // Add OTP verification checkbox.
+        $form['otp_verification'] = [            
+            '#type' => 'submit',
+            '#value' => t('Verify OTP'),
+            '#ajax' => [
+                'callback' => 'invoice_otp_verification_callback',
+                'wrapper' => 'show_message',
+            ],
+        ];
+
+        // Add main submit button.
+        $form['actions']['submit']['#attributes']['disabled'] = 'disabled';
+        $form['actions']['submit']['#suffix'] = '<div id="otp-sent-markup"></div>';
+
+    }
+}
+
+
+/**
+ * Ajax callback for sending OTP.
+ */
+function invoice_otp_send_otp_callback(array &$form, FormStateInterface $form_state) {
+
+    // Generate and send OTP code.
+    //    $mobile_number = $form_state->getValue('mobile_number');
+    $mobile_number = $form_state->getValue("field_phone")[0]['value'];
+    $email = $form_state->getValue('mail');
+    //    $email = 'adnankhan@yopmail.com';
+    // Implement your OTP generation and sending logic here.
+    $otp = $num = str_pad(rand(0,9999),4,'0',STR_PAD_LEFT);
+    $session = \Drupal::request()->getSession();
+    //    /**** SET SESSION ****/
+    $session->set('otp', $otp);
+
+    $session = \Drupal::request()->getSession();
+    $session_otp = $session->get('otp');
+
+    $response = new AjaxResponse();
+
+    // Send an email
+    $mailManager = \Drupal::service('plugin.manager.mail');
+    $module = 'login_registration_otp'; // Replace with your custom module name
+    $key = 'otp_email';
+    $to = $email;
+    $params = [
+        'message' => "Your Inoive OTP is: $otp",
+    ];
+    $langcode = \Drupal::currentUser()->getPreferredLangcode();
+    $send = true;
+    $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
+
+    if ($result['result'] !== true) {
+        // An error occurred while sending the email
+        //        $response->addCommand(new AlertCommand('Failed to send OTP email.'));
+        $msg = '<p class="text-danger">Failed to send OTP email.</p>';
+        $response->addCommand(new HtmlCommand('#custom-markup-wrapper', $msg));
+
+    } else {
+        // Email sent successfully
+        $msg = "<p class='text-success'>OTP  sent to: $email. Phone: $mobile_number Your OTP: $session_otp </p>";
+        $response->addCommand(new HtmlCommand('#custom-markup-wrapper', $msg));
+        //        $response->addCommand(new AlertCommand("OTP  sent to: $email. Phone: $mobile_number Your OTP: $session_otp "));
+        //        $response->addCommand(new AlertCommand(kint($mobile_number)));
+    }
+    return $response;
+}
+
+/**
+ * Ajax callback for OTP verification.
+ */
+function invoice_otp_verification_callback(array &$form, FormStateInterface $form_state) {
+
+    $verified = FALSE;
+    // Implement your OTP verification logic here.
+    $submitted_otp = $form_state->getValue('otp');
+    $session = \Drupal::request()->getSession();
+    $otpsession_val = $session->get('otp');
+    $email = $form_state->getValue("mail");
+    $mobile_number = $form_state->getValue("field_phone");
+
+    // Example logic: Compare submitted OTP with a predefined value (e.g., "1234").
+    if ($submitted_otp ==$otpsession_val) {
+        $verified = TRUE;
+    }
+
+    // Enable or disable the main submit button based on OTP verification.
+    if ($verified) {
+        $form['actions']['submit']['#attributes']['disabled'] = FALSE;
+        // Remove any duplicate submit buttons.
+        unset($form['actions']['submit']['#ajax']);
+        // Update the form to include only the submit button.
+        $new_submit_button = [
+            '#type' => 'submit',
+            '#value' => $form['actions']['submit']['#value'],
+            '#name' => $form['actions']['submit']['#name'],
+            '#attributes' => $form['actions']['submit']['#attributes'],
+        ];
+        $response = new AjaxResponse();
+         $msg = "<p class='text-success'>Your otp is correct</p>";
+        $response->addCommand(new HtmlCommand('#custom-markup-wrapper', $msg));
+        //    $response->addCommand(new AlertCommand("email".$email." phone".$mobile_number ));
+        $response->addCommand(new ReplaceCommand('#edit-actions', render($new_submit_button)));
+
+
+
+    } else {
+        $form['actions']['submit']['#attributes']['disabled'] = 'disabled';
+        $response = new AjaxResponse();
+//        $response->addCommand(new AlertCommand("Invalid OTP" ));
+          $msg = "<p class='text-danger'>Invalid OTP</p>";
+        $response->addCommand(new HtmlCommand('#custom-markup-wrapper', $msg));
+
+
+    }
+    return $response;
+
+}
+
+function otp_handler(&$form, FormStateInterface $form_state){
+
+    global $user;
+    $otp = $num = str_pad(rand(0,9999),4,'0',STR_PAD_LEFT);
+    $session = \Drupal::request()->getSession();
+    /**** SET SESSION ****/
+    $session->set('otp', 1234);
+
+    $name = $form_state->getValue("name");
+    $user = user_load_by_name($name);
+    $session->set('session-name', $name);
+    $email = $user->getEmail();
+    $id = $user->id();
+    $session->set('login-id', $id);
+    $session->set('login-email', $email);
+
+    $arr = array('uid'=> $id,'name' => $name, 'email' => $email, 'otp' => $otp);
+
+    //    sendEmail($arr, 'user_login_opt');
+    $form_state->setRedirect('login_registration_otp.o_t_p');
+
+
+}
+
+
+/**
+ * Implements hook_mail().
+ */
+function login_registration_otp_mail($key, &$message, $params) {
+    switch ($key) {
+        case 'otp_email':
+            $message['subject'] = t('Invoive OTP.');
+            $message['body'][] = $params['message'];
+            break;
+    }
+}

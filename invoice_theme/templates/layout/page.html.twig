@@ -1,0 +1,188 @@
+
+<!-- /GLOBAL-LOADER -->
+<!-- PAGE -->
+<div class="page">
+    <div class="page-main">
+
+        <!-- app-Header -->
+        <div class="app-header header sticky">
+            <div class="container-fluid main-container">
+                <div class="d-flex align-items-center">
+                    <a aria-label="Hide Sidebar" class="app-sidebar__toggle" data-bs-toggle="sidebar" href="{{ url('<front>') }}"></a>
+                    <div class="responsive-logo">
+                        <a href="{{ url('<front>') }}" class="header-logo" style="width: 100px">
+                            <img src="{{ logopath }}" class="mobile-logo logo-1" alt="logo">
+                            <img src="{{ logopath }}" class="mobile-logo dark-logo-1" alt="logo">
+                        </a>
+                    </div>
+                    <!-- sidebar-toggle-->
+                    <a class="logo-horizontal " href="{{ url('<front>') }}">
+                        <img src="{{ logopath }}" class="header-brand-img desktop-logo" alt="logo">
+                        <img src="{{ logopath }}" class="header-brand-img light-logo1"
+                             alt="logo">
+                    </a>
+                    <!-- LOGO -->
+
+                    {{ page.header }}
+
+                    <div class="d-flex order-lg-2 ms-auto header-right-icons">
+                        <!-- SEARCH -->
+                        <button class="navbar-toggler navresponsive-toggler d-lg-none ms-auto" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent-4" aria-controls="navbarSupportedContent-4" aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="navbar-toggler-icon fe fe-more-vertical text-dark"></span>
+                        </button>
+                        <div class="navbar navbar-collapse responsive-navbar p-0">
+                            <div class="collapse navbar-collapse" id="navbarSupportedContent-4">
+                                <div class="d-flex order-lg-2">
+                                    <div class="dropdown d-md-flex">
+                                        <a class="nav-link icon theme-layout nav-link-bg layout-setting">
+                                            <span class="dark-layout"><i class="fe fe-moon"></i></span>
+                                            <span class="light-layout"><i class="fe fe-sun"></i></span>
+                                        </a>
+                                    </div>
+                                    <!-- Theme-Layout -->
+                                    <div class="dropdown d-md-flex">
+                                        <a class="nav-link icon full-screen-link nav-link-bg">
+                                            <i class="fe fe-minimize fullscreen-button" id="myvideo"></i>
+                                        </a>
+                                    </div>
+                                    <!-- FULL-SCREEN -->
+
+
+                                    <!-- MESSAGE-BOX -->
+                                    {% set roles = user.getroles(TRUE)|join(',') %}
+                                    {% set roles =  roles|join(',') %}
+                                    {% set username =  user.getDisplayName %}
+
+
+                                    <div class="dropdown d-md-flex profile-1">
+                                        <a href="javascript:void(0);" data-bs-toggle="dropdown" class="nav-link leading-none d-flex px-1">
+                                            <span>
+                                                <img src="{{ url('<front>') }}profile.png" alt="" class="avatar  profile-user brround cover-image">
+                                            </span>
+
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                            <div class="drop-heading">
+                                                <div class="text-center">
+                                                    <h5 class="text-dark mb-0"> {% if username %}
+                                                        {{ username }}
+                                                        {% else %}  
+                                                        Anonymous user
+                                                        {% endif %}</h5>
+                                                    <small class="text-muted">   {% if roles %}
+                                                        {{ roles }}
+                                                        {% else %}  
+                                                        Anonymous Role
+                                                        {% endif %}</small>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown-divider m-0"></div>
+                                            {% if user.id %}
+
+                                            <a class="dropdown-item" href="{{ url('<front>') }}user/{{ user.id }}">
+                                                <i class="dropdown-icon fe fe-user"></i> Profile
+                                            </a>
+                                            {% endif %}
+                                            <a class="dropdown-item" href="{{ url('<front>') }}/user/logout">
+                                                <i class="dropdown-icon fe fe-alert-circle"></i> Sign out
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <!-- SIDE-MENU -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /app-Header -->
+
+        <!--APP-SIDEBAR-->
+        <div class="sticky">
+            <div class="app-sidebar__overlay" data-bs-toggle="sidebar"></div>
+            <aside class="app-sidebar">
+                <div class="side-header">
+                    <a class="header-brand1" href="{{ url('<front>') }}">
+                        <img src="{{ logopath }}" class="header-brand-img desktop-logo" alt="logo">
+                        <img src="{{ logopath }}" class="header-brand-img toggle-logo" alt="logo">
+                        <img src="{{ logopath }}" class="header-brand-img light-logo" alt="logo">
+                        <img src="{{ logopath }}" class="header-brand-img light-logo1" alt="logo">
+                    </a>
+                    <!-- LOGO -->
+                </div>
+                <div class="main-sidemenu">
+                    <div class="slide-left disabled" id="slide-left"><svg xmlns="http://www.w3.org/2000/svg"
+                                                                          fill="#7b8191" width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z" />
+                        </svg>
+                    </div>
+                    {{ page.sidebar_first }}
+
+                    <div class="slide-right" id="slide-right"><svg xmlns="http://www.w3.org/2000/svg" fill="#7b8191"
+                                                                   width="24" height="24" viewBox="0 0 24 24">
+                        <path d="M10.707 17.707 16.414 12l-5.707-5.707-1.414 1.414L13.586 12l-4.293 4.293z" />
+                        </svg></div>
+                </div>
+            </aside>
+        </div>
+        <!--/APP-SIDEBAR-->
+
+        <!--app-content open-->
+        <div class="main-content app-content mt-0">
+            <div class="side-app">
+
+                <!-- CONTAINER -->
+                <div class="main-container container-fluid">
+
+                    <!-- PAGE-HEADER -->
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">
+                                {% if node.title.value %}
+                                {{ node.title.value }}
+                                {% elseif page['#title'] %}
+                                {{ page['#title'] }}
+                                {% endif %}
+                                {{ title_suffix }}
+                            </h1>
+                            {{ page.breadcrumb }}
+
+                        </div>
+                        <!--
+<div class="ms-auto pageheader-btn">
+<a href="javascript:void(0);" class="btn btn-primary btn-icon text-white me-2">
+<span>
+<i class="fe fe-plus"></i>
+</span> Add Account
+</a>
+<a href="javascript:void(0);" class="btn btn-success btn-icon text-white">
+<span>
+<i class="fe fe-log-in"></i>
+</span> Export
+</a>
+</div>
+-->
+                    </div>
+                    {{ page.content }}
+
+
+                </div>
+
+            </div>
+            <!-- CONTAINER END -->
+        </div>
+    </div>
+    <!--app-content end-->
+</div>
+
+<!-- Sidebar-right -->
+
+<!--/Sidebar-right-->
+<!-- FOOTER -->
+{{ page.footer }}
+<!-- FOOTER END -->
+
+<!-- BACK-TO-TOP -->
+<a href="#top" id="back-to-top"><i class="fa fa-angle-up"></i></a>

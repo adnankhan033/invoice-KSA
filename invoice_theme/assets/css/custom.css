@@ -1,0 +1,39 @@
+.rightside{float:right}
+.blackbtn{background: #000; color: #fff;}
+.blackbtn:hover{background: #ddd; color: #333;}
+.slabel{font-size: 16px;
+font-weight: bold;
+line-height: 38px;
+margin-bottom: 40px}
+
+
+            card-title.command-input {
+                width: 50%;
+                text-align: left;
+            }
+            .card-title.chatTypeLabel {
+                width: 50%;
+
+                text-align: right;
+            }
+            .imgsection{
+                display: none;
+            }
+            .docsection{
+                display: none;  
+            }
+            .hidesection{
+                display: none;  
+            }
+
+.card-options p {
+  color: #333;
+  font-size: 14px;
+  padding: 0;
+  margin: 0;
+}
+
+table td {
+  white-space:pre;
+}
+

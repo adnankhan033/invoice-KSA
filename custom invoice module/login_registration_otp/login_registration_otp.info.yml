@@ -1,0 +1,5 @@
+name: 'login_registration_OTP'
+type: module
+description: 'Created OTP module for login and registration form'
+core_version_requirement: ^9.2 || ^10
+package: 'Custom'

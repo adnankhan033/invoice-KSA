@@ -1,0 +1,204 @@
+<?php
+
+/**
+ * @file
+ * Contains commerce_license_payment.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Drupal\Core\Form\FormBase;
+use Drupal\user\Entity\User;
+use Drupal\taxonomy\Entity\Term;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Drupal\Core\Url;
+use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\commerce_product\Entity\ProductInterface;
+use Drupal\Core\Entity\EntityRepositoryInterface;
+use Drupal\commerce_product\Entity\ProductVariationInterface;
+
+// Require the Tap Payments library
+require_once DRUPAL_ROOT . '/vendor/autoload.php';
+use TapPayments\GoSell;
+
+/**
+ * Implements hook_help().
+ */
+function commerce_license_payment_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+            // Main module help for the commerce_license_payment module.
+        case 'help.page.commerce_license_payment':
+            $output = '';
+            $output .= '<h3>' . t('About') . '</h3>';
+            $output .= '<p>' . t('Created custom module for commerce license payment') . '</p>';
+            return $output;
+
+        default:
+    }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_license_payment_theme() {
+    return [
+        'commerce_license_payment' => [
+            'render element' => 'children',
+        ],
+    ];
+}
+
+function commerce_license_payment_form_alter(&$form, FormStateInterface $form_state, $form_id)
+{
+    $license_form_id = strstr($form_id, 'state_machine_transition_form_commerce_license_state', true);
+    //    get license id if form id exist
+    $payment_id = \Drupal::request()->query->get('tap_id');
+    if($payment_id){
+        //        condition if  paid
+        kint("payment success");
+        // Get the current URL object
+        $current_url = Url::fromRoute('<current>');
+        // Get the internal path from the URL
+        $path = $current_url->getInternalPath();
+        // Extract the license ID from the path
+        //        load license id to store payement success id
+        $pattern = '/\/licenses\/(\d+)/';
+        preg_match($pattern, $path, $matches);
+        if (isset($matches[1])) {
+            $license_stored_id = $matches[1];
+        }
+        $entity_type_manager = \Drupal::service('entity_type.manager');
+        if ($license = $entity_type_manager->getStorage('commerce_license')->load($license_stored_id)) {
+            // Set the field value
+            $license->set('field_payment_id', "$payment_id");
+            $license->save();
+        }
+        //        $tap_id i will save the payent response id in lisence new field
+        unset($form['add_payment']['actions']['submit']);
+    }else{
+        //        condition if not paid
+        if($license_form_id !='0')
+        {
+            $request = \Drupal::service('request_stack')->getCurrentRequest();
+            $current_path = $request->getPathInfo();
+            $url = Url::fromUserInput($current_path);
+            if($submitted_license_id = $url->getRouteParameters()['commerce_license'])
+            {
+                $entity_type_manager = \Drupal::service('entity_type.manager');
+                $license = $entity_type_manager->getStorage('commerce_license')->load($submitted_license_id);
+                $get_added_license_value = $license->get('field_payment_id')->getValue();
+
+                // Check if the field value exists.
+                if (!empty($get_added_license_value)) {
+                    //                    i will use  this condition further
+                    $payment_id = $get_added_license_value[0]['value'];
+                }
+                else {
+                    //                    if not paid then show add payment button
+                    GoSell::setPrivateKey("sk_test_ZMATFtmzajDlu9W6U7S1Vi3r");
+                    $form['add_payment'] = [
+                        '#type' => 'submit',
+                        '#value' => t('Pay Now'),
+                        '#submit' => ['add_payment_submit_handler'],
+                    ];
+                }
+            }
+            unset($form['actions']);
+
+        }
+    }
+}
+
+/**
+ * Custom submit handler for the custom button.
+ */
+function add_payment_submit_handler(&$form, FormStateInterface $form_state) {    
+    // Set your secret key here
+
+    global $base_url;  
+    $site_url = \Drupal\Core\Url::fromRoute('<current>');
+    $getLatestLicenseUrl = $site_url->getInternalPath();
+    $redirectUrl =$base_url.'/'.$getLatestLicenseUrl;
+
+    $new_license_id = substr($getLatestLicenseUrl, strlen('admin/commerce/licenses/'));
+    $new_license_id = (int)$new_license_id;
+    if($new_license_id)
+    {
+        $entity_type_manager = \Drupal::service('entity_type.manager');
+        $load_license = $entity_type_manager->getStorage('commerce_license')->load($new_license_id);
+
+        $productVariations = $load_license->get('product_variation')->referencedEntities();
+
+        foreach ($productVariations as $variation) {
+            // Get the field values of each variation
+            $selectedPlaneName = $variation->get('title')->getValue()[0]['value'];
+            $selectedPlanePrice = $variation->get('price')->getValue()[0]['number'];
+        }
+
+    }
+
+    $current_user = \Drupal::currentUser();
+    if($current_uid = $current_user->id()){
+        $currentUser = \Drupal\user\Entity\User::load($current_uid);
+        $email = $current_user->getEmail();
+        $user_name = $currentUser->getAccountName();
+        //        $field_phone_value = $currentUser->get('field_phone')->value;
+    }
+
+
+    //     kint($selectedPlaneName);
+    //        kint($selectedPlanePrice);
+    //        kint($user_name);
+    //        kint($email);
+    //    exit;
+    $charge = GoSell\Charges::create(
+        [
+            "amount"=> $selectedPlanePrice,
+            "currency"=> "SAR",
+            "threeDSecure"=> true,
+            "save_card"=> false,
+            "description"=> "$selectedPlaneName",
+            "statement_descriptor"=> "$selectedPlaneName",
+
+            "customer"=> [
+                "first_name"=> "$user_name",
+                "middle_name"=> "",
+                "last_name"=> "",
+                "email"=> "$email",
+                "phone"=> [
+                    "country_code"=> "965",
+                    "number"=> "$field_phone_value"
+                ]
+            ],
+            "source"=> [
+                "id"=> "src_all",
+                "details" => [
+                    "card"=> [
+                        "number"=> $cardNumber,
+                        "exp_month"=> $cardExpiryMonth,
+                        "exp_year"=> $cardExpiryYear,
+                        "cvc"=> $cardCvv
+                    ]
+                ]
+            ],
+            "post"=> [
+                "url"=> ""
+            ],
+            "redirect"=> [
+                "url"=> $redirectUrl
+            ]
+        ]
+    );
+
+
+    if($charge->response->message =='Initiated'){
+        $redirectUrl = $charge->transaction->url;
+        header("Location: $redirectUrl");
+        exit(); 
+    }else{
+        kint('Payment failed.');
+
+    }
+}

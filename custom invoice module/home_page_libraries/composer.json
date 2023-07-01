@@ -1,0 +1,13 @@
+{
+    "name": "home_page_libraries",
+    "type": "drupal-module",
+    "description": "Added libraries only for front page",
+    "keywords": [
+    ],
+    "homepage": "https://www.drupal.org/project/home_page_libraries",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/home_page_libraries",
+        "source": "http://cgit.drupalcode.org/home_page_libraries",
+    },
+}

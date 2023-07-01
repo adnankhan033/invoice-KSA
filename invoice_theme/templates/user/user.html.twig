@@ -1,0 +1,132 @@
+{#
+/**
+* @file
+* Theme override to present all user data.
+*
+* This template is used when viewing a registered user's page,
+* e.g., example.com/user/123. 123 being the user's ID.
+*
+* Available variables:
+* - content: A list of content items. Use 'content' to print all content, or
+*   print a subset such as 'content.field_example'. Fields attached to a user
+*   such as 'user_picture' are available as 'content.user_picture'.
+* - attributes: HTML attributes for the container element.
+* - user: A Drupal User entity.
+*
+* @see template_preprocess_user()
+*/
+#}
+<article >
+    {% if content %}
+
+
+
+
+
+    
+    
+    {% endif %}
+
+    <div class="row" id="user-profile">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="wideget-user">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-xl-6">
+                                <div class="wideget-user-desc d-sm-flex">
+                                    <div class="wideget-user-img col-md-6">
+                                        <img class="img-responsive cur-pointer" src="{{ picture }}" alt="img" >
+                                    </div>
+                                    <div class="user-wrap col-md-6">
+                                        <h4><strong>{{ full_Name }} </strong> </h4>
+                                        <h6 class="text-muted mb-3">{{ username|upper }}</h6>
+
+                                        <a href="mailto:{{ userEmail }}" class="btn btn-secondary mt-1 mb-1"><i class="fa fa-envelope"></i> E-mail</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-12 col-md-12 col-xl-6">
+                                <div class="text-xl-right mt-4 mt-xl-0">
+
+                                    <a href="{{ url('<front>') }}user/{{uid}}/edit" class="btn btn-primary">Edit Account</a>
+
+                                </div>
+                                <div class="mt-5">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-top">
+                    <div class="wideget-user-tab">
+                        <div class="tab-menu-heading">
+                            <div class="tabs-menu1">
+                                <ul class="nav">
+                                    <li class=""><a href="#tab-51" class="show active" data-bs-toggle="tab">Profile</a></li>
+
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="tab-content">
+                <div class="tab-pane show active" id="tab-51">
+                    <div id="profile-log-switch">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="media-heading">
+                                    <h5><strong>Personal Information</strong></h5>
+                                </div>
+                                <div class="table-responsive ">
+                                    <table class="table row table-borderless">
+                                        <tbody class="col-lg-12 col-xl-6 p-0">
+                                            <tr>
+                                                <td><strong>Name: </strong> {{ username}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>CR Number: </strong> {{ content.field_cr_no | render | striptags | trim }}</td>
+                                            </tr>
+                                              
+                                                     <tr>
+                                                <td><strong>Address: </strong>  {{ content.field_official_address | render | striptags | trim }}</td>
+                                            </tr>
+
+
+                                        </tbody>
+                                        <tbody class="col-lg-12 col-xl-6 p-0">
+                                            <tr>
+                                                <td><strong>Email: </strong> {{ userEmail }}</td>
+                                            </tr> 
+                                            <tr>
+                                                <td><strong>Phone Number: </strong>  {{ content.field_phone_number | render | striptags | trim }}
+                                                </td>
+                                            </tr>  
+                                                  <tr>
+                                                <td><strong>VAT: </strong>  {{ content.field_vat_registration_no | render | striptags | trim }}
+                                                </td>
+                                            </tr>  
+
+
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- COL-END -->
+    </div>
+</article>
+
+
+
+

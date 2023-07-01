@@ -1,0 +1,88 @@
+{#
+/**
+* @file
+* Olivero's theme implementation for the main menu.
+*
+* Available variables:
+* - menu_name: The machine name of the menu.
+* - items: A nested list of menu items. Each menu item contains:
+*   - attributes: HTML attributes for the menu item.
+*   - below: The menu item child items.
+*   - title: The menu link title.
+*   - url: The menu link url, instance of \Drupal\Core\Url
+*   - localized_options: Menu link localized options.
+*   - is_expanded: TRUE if the link has visible children within the current
+*     menu tree.
+*   - is_collapsed: TRUE if the link has children within the current menu tree
+*     that are not currently visible.
+*   - in_active_trail: TRUE if the link is in the active trail.
+*
+* @ingroup themeable
+*/
+#}
+{% import _self as menus %}
+
+{#
+We call a macro which calls itself to render the full tree.
+@see https://twig.symfony.com/doc/1.x/tags/macro.html
+#}
+{# page.html.twig #}
+
+
+{% set attributes = attributes.addClass('menu') %}
+{{ menus.menu_links(items, attributes, 0) }}
+
+{% macro menu_links(items, attributes, menu_level) %}
+{% set primary_nav_level = 'side-menu open sub-menu' %}
+{% import _self as menus %}
+<div class="main-sidemenu is-expanded "> <p></p>
+
+    {% if items %}
+    <ul class="side-menu open">
+        {% set attributes = attributes.removeClass(primary_nav_level) %}
+        {% for item in items %}
+
+        {% if item.url.isRouted and item.url.routeName == '<nolink>' %}
+        {% set menu_item_type = 'nolink' %}
+        {% elseif item.url.isRouted and item.url.routeName == '<button>' %}
+        {% set menu_item_type = 'button' %}
+        {% else %}
+        {% set menu_item_type = 'link' %}
+        {% endif %}
+
+        {% set item_classes = [
+
+        'menu__item slide',
+        'menu__item--' ~ menu_item_type,
+        'main- ' ~ ' sub-category',
+        item.in_active_trail ? 'menu__item--active-trail',
+        item.below ? 'has-sub menu__item--has-children slide ',
+        ]
+        %}
+
+        {% set link_classes = [
+        '',
+        '' ~ menu_item_type,
+        'side-menu__item  ' ~ (menu_level + 1),
+        item.in_active_trail ? 'menu__link--active-trail',
+        item.below ? 'menu__link--has-children',
+        ]
+        %}
+
+        <li{{ item.attributes.addClass(item_classes) }}>
+
+            {% set aria_id = (item.title ~ 'has-sub -submenu- ' ~ loop.index )|clean_id %}
+
+            {{ link(item.title, item.url, { 'class': link_classes }) }}
+
+            {% if item.below %}
+            {{ menus.menu_links(item.below, attributes, menu_level + 1) }}
+            {% endif %}
+
+            </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+        {% endmacro %}
+
+        </nolink>

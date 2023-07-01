@@ -1,0 +1,75 @@
+<?php
+
+/**
+ * @file
+ * Contains home_page_libraries.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function home_page_libraries_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+            // Main module help for the home_page_libraries module.
+        case 'help.page.home_page_libraries':
+            $output = '';
+            $output .= '<h3>' . t('About') . '</h3>';
+            $output .= '<p>' . t('Added libraries only for front page') . '</p>';
+            return $output;
+
+        default:
+    }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function home_page_libraries_theme() {
+    return [
+        'home_page_libraries' => [
+            'render element' => 'children',
+        ],
+    ];
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ */
+function home_page_libraries_page_attachments_alter(array &$attachments) {
+    $path = $current_path = \Drupal::service('path.current')->getPath();
+    // Check if it's the specific page where you want to unset the library.
+    if($path =='/node/10'){
+        // Unset the library from the attachments array.
+
+        $libraries = $attachments['#attached']['library'];
+//        remove below libraris from home page
+        $librariesToUnset = array(
+            'bootstrap5/base',
+            'bootstrap5/messages',
+            'bootstrap5/bootstrap5-js-latest',
+            'bootstrap5/global-styling',
+            'invoice_theme/global',
+        );
+        foreach ($librariesToUnset as $library) {
+            if (($key = array_search($library, $attachments['#attached']['library'])) !== false) {
+                unset($attachments['#attached']['library'][$key]);
+            }
+        }
+
+        
+    }
+}
+
+function home_page_libraries_page_attachments(&$variables) {
+    $path = $current_path = \Drupal::service('path.current')->getPath();
+    //    Added libraries on home page
+    if($path =='/node/10')
+    {
+        $variables['#attached']['library'][] = 'home_page_libraries/HomePageLibraries';     
+    }
+}
+
+
+

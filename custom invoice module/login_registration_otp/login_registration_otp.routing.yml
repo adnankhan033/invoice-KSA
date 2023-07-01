@@ -1,0 +1,17 @@
+login_registration_otp.o_t_p:
+  path: '/user/otp'
+  defaults:
+    _form: '\Drupal\login_registration_otp\Form\OTP'
+    _title: ''
+  requirements:
+    _role: 'anonymous' 
+  options:
+    no_cache: 'TRUE'
+
+login_registration_otp.supplier_login_form:
+  path: '/login/supplier'
+  defaults:
+    _form: '\Drupal\login_registration_otp\Form\SupplierLoginForm'
+    _title: ''
+  requirements:
+    _access: 'TRUE'

@@ -1,0 +1,246 @@
+
+{#
+/**
+* @file
+* Theme override to display a node.
+*
+* Available variables:
+* - node: The node entity with limited access to object properties and methods.
+*   Only method names starting with "get", "has", or "is" and a few common
+*   methods such as "id", "label", and "bundle" are available. For example:
+*   - node.getCreatedTime() will return the node creation timestamp.
+*   - node.hasField('field_example') returns TRUE if the node bundle includes
+*     field_example. (This does not indicate the presence of a value in this
+*     field.)
+*   - node.isPublished() will return whether the node is published or not.
+*   Calling other methods, such as node.delete(), will result in an exception.
+*   See \Drupal\node\Entity\Node for a full list of public properties and
+*   methods for the node object.
+* - label: (optional) The title of the node.
+* - content: All node items. Use {{ content }} to print them all,
+*   or print a subset such as {{ content.field_example }}. Use
+*   {{ content|without('field_example') }} to temporarily suppress the printing
+*   of a given child element.
+* - author_picture: The node author user entity, rendered using the "compact"
+*   view mode.
+* - metadata: Metadata for this node.
+* - date: (optional) Themed creation date field.
+* - author_name: (optional) Themed author name field.
+* - url: Direct URL of the current node.
+* - display_submitted: Whether submission information should be displayed.
+* - attributes: HTML attributes for the containing element.
+*   The attributes.class element may contain one or more of the following
+*   classes:
+*   - node: The current template type (also known as a "theming hook").
+*   - node--type-[type]: The current node type. For example, if the node is an
+*     "Article" it would result in "node--type-article". Note that the machine
+*     name will often be in a short form of the human readable label.
+*   - node--view-mode-[view_mode]: The View Mode of the node; for example, a
+*     teaser would result in: "node--view-mode-teaser", and
+*     full: "node--view-mode-full".
+*   The following are controlled through the node publishing options.
+*   - node--promoted: Appears on nodes promoted to the front page.
+*   - node--sticky: Appears on nodes ordered above other non-sticky nodes in
+*     teaser listings.
+*   - node--unpublished: Appears on unpublished nodes visible only to site
+*     admins.
+* - title_attributes: Same as attributes, except applied to the main title
+*   tag that appears in the template.
+* - content_attributes: Same as attributes, except applied to the main
+*   content tag that appears in the template.
+* - author_attributes: Same as attributes, except applied to the author of
+*   the node tag that appears in the template.
+* - title_prefix: Additional output populated by modules, intended to be
+*   displayed in front of the main title tag that appears in the template.
+* - title_suffix: Additional output populated by modules, intended to be
+*   displayed after the main title tag that appears in the template.
+* - view_mode: View mode; for example, "teaser" or "full".
+* - teaser: Flag for the teaser state. Will be true if view_mode is 'teaser'.
+* - page: Flag for the full page state. Will be true if view_mode is 'full'.
+* - readmore: Flag for more state. Will be true if the teaser content of the
+*   node cannot hold the main body content.
+* - logged_in: Flag for authenticated user status. Will be true when the
+*   current user is a logged-in member.
+* - is_admin: Flag for admin user status. Will be true when the current user
+*   is an administrator.
+*
+* @see template_preprocess_node()
+*
+*/
+#}
+{%
+set classes = [
+'node',
+'node--type-' ~ node.bundle|clean_class,
+node.isPromoted() ? 'node--promoted',
+node.isSticky() ? 'node--sticky',
+not node.isPublished() ? 'node--unpublished',
+view_mode ? 'node--view-mode-' ~ view_mode|clean_class,
+]
+%}
+{{ attach_library('bootstrap5/node') }}
+
+        <div class="tm_invoice_btns- tm_hide_print-">
+                <a href="javascript:window.print()" class="tm_invoice_btn tm_color1" id="printInvoice">
+                    <span class="tm_btn_icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32"></path><rect x="128" y="240" width="256" height="208" rx="24.32" ry="24.32" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32"></rect><path d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32"></path><circle cx="392" cy="184" r="24" fill="currentColor"></circle></svg>
+                    </span>
+                    <span class="tm_btn_text">Print</span> 
+                </a><br><br>
+            </div>
+
+    <div class="tm_container">
+        <div class="tm_invoice_wrap">
+            <div class="tm_invoice tm_style2 tm_type1 tm_accent_border" id="tm_download_section">
+                <div class="tm_invoice_in">
+                    <div class="tm_invoice_head tm_top_head tm_mb20 tm_mb10_md">
+                        <div class="tm_invoice_left">
+                            <div class="tm_logo"><img src="{{supplier_and_client_data.company_logo}}" alt="Logo"></div>
+                        </div>
+                        <div class="tm_invoice_right">
+                            <div class="tm_grid_row tm_col_3 tm_invoice_info_in tm_round_border tm_gray_bg">
+                                <div>
+                                    <span>Invoice No:</span> <br>
+                                    <b class="tm_f18 tm_accent_color">{{node.label }}</b>
+                                </div>
+                                <div>
+                                    {% if node.field_invoice_date_time.value is not empty %}
+                                    {% set invoiceDateTime = node.field_invoice_date_time.value|date_modify('+3 hours')|date('Y-m-d H:i:s') %}
+                                    {% set invoiceDate = invoiceDateTime|date('Y-m-d') %}
+                                    {% set invoiceTime = invoiceDateTime|date('H:i:s') %}
+                                    <span>Invoice Date &amp; Time:</span> <br>
+                                    <b class="tm_f18 tm_accent_color">{{ invoiceDate }} {{ invoiceTime|replace({'T': ' '}) }}</b>
+                                                            {% endif %}
+                                </div>
+                                <div>
+                                    <span>Date of Supply:</span> <br>
+                                    <b class="tm_f18 tm_accent_color"> {{ node.field_date_of_supply.value }} </b>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="tm_shape_bg tm_accent_bg"></div>
+                    </div>
+                    <div class="tm_invoice_info tm_mb10">
+                        <div class="tm_invoice_info_left">
+                            <p class="tm_mb2"><b>Invoice To:</b></p>
+                            <p>
+                                <span class="tm_f16 tm_primary_color">Client Name:</span> <br>
+                                <b class="tm_f16 tm_primary_color">{{supplier_and_client_data.client_name}}</b> <br>
+                                <span class="tm_f16 tm_primary_color">Commercial Registration No</span> <br>
+                                <b class="">  {{supplier_and_client_data.client_vat_reg_no}}</b> <br>
+
+                            </p>
+                        </div>
+                        <div class="tm_invoice_info_right">
+
+                            <div class="tm_grid_row tm_col_3 tm_invoice_info_in tm_round_border tm_gray_bg">
+                                <div>
+                                    <span>Supplier Name:</span> <br>
+                                    <b class="tm_f18 tm_accent_color">{{ author_name|striptags }} </b>
+                                </div>
+                                <div>
+                                    <span>CR No:</span> <br>
+                                    <b class="tm_f18 tm_accent_color">{{supplier_and_client_data.cr_no}} </b>
+                                </div>
+                                <div>
+                                    <span>VAT Registraion No:</span> <br>
+                                    <b class="tm_f18 tm_accent_color">{{supplier_and_client_data.vat_number}} </b>
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tm_table tm_style1">
+                        <div class="tm_round_border">
+                            <div class="tm_table_responsive">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th class="th-row">S/N:</th>
+                                            <th class="th-row">Work Description:</th>
+                                            <th class="th-row">Price:</th>
+                                            <th class="th-row">Qty:</th>
+                                            <th class="th-row">Discount:</th>
+                                            <th class="th-row">Total Excl VAT:</th>
+                                            <th class="th-row">Tax Rate:</th>
+                                            <th class="th-row">Tax Amount:</th>
+                                            <th class="th-row">Total (Incl.VAT): </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+{{ content.field_add_more| render }}
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="tm_invoice_footer tm_mb15 tm_m0_md">
+                            <div class="tm_left_footer">
+                                <div class="tm_mb10 tm_m0_md"></div>
+                                <p class="tm_mb5">
+                                    <b class="tm_primary_color">Supplier Phone Number:</b> <br>
+                                    {{supplier_and_client_data.supplier_phone_number}} 
+                                </p>
+                                <p class="tm_mb0">
+                                    <b class="tm_primary_color">Supplier Official Address: </b> <br>
+                                     {{supplier_and_client_data.official_address}}
+                                </p>  
+                                <p class="tm_mb0">
+                                    <b class="tm_primary_color">Client Address:</b> <br>
+                                    {{supplier_and_client_data.client_address}}
+                                </p>
+                            </div>
+                            <div class="tm_right_footer">
+                                <table class="tm_mb15">
+                                    <tbody>
+                                        <tr>
+                                            <td class="tm_width_3 tm_primary_color tm_border_none tm_bold">Total:</td>
+                                            <td class="tm_width_3 tm_primary_color tm_text_right tm_border_none tm_bold">{{ total_amount }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="tm_width_3 tm_danger_color tm_border_none tm_pt0">Discount:</td>
+                                            <td class="tm_width_3 tm_danger_color tm_text_right tm_border_none tm_pt0">-{{ total_discount_amount }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="tm_width_3 tm_primary_color tm_border_none tm_pt0"> Total Taxable Amount: </td>
+                                            <td class="tm_width_3 tm_primary_color tm_text_right tm_border_none tm_pt0">{{ total_taxable_amount }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="tm_width_3 tm_primary_color tm_border_none tm_pt0">VAT:  </td>
+                                            <td class="tm_width_3 tm_primary_color tm_text_right tm_border_none tm_pt0">+15%</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="tm_width_3 tm_border_top_0 tm_bold tm_f18 tm_white_color tm_accent_bg tm_radius_6_0_0_6">Total (Incl.VAT)	</td>
+                                            <td class="tm_width_3 tm_border_top_0 tm_bold tm_f18 tm_primary_color tm_text_right tm_white_color tm_accent_bg tm_radius_0_6_6_0">{{ total_tax_include_amount }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tm_bottom_invoice">
+                        <div class="tm_bottom_invoice_left">
+                            <p class="tm_primary_color tm_f12 tm_m0 tm_bold">Terms &amp; Condition</p>
+                            <p class="tm_m0 tm_f12">Invoice was created on a computer and is valid without the signature and seal.</p>
+                        </div>
+                        <div class="tm_bottom_invoice_right tm_mobile_hide">
+                            <div class="tm_logo">{{ content.field_qr_code | render  }} </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+<!--
+            <div class="tm_invoice_btns tm_hide_print">
+                <a href="javascript:window.print()" class="tm_invoice_btn tm_color1">
+                    <span class="tm_btn_icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><path d="M384 368h24a40.12 40.12 0 0040-40V168a40.12 40.12 0 00-40-40H104a40.12 40.12 0 00-40 40v160a40.12 40.12 0 0040 40h24" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32"></path><rect x="128" y="240" width="256" height="208" rx="24.32" ry="24.32" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32"></rect><path d="M384 128v-24a40.12 40.12 0 00-40-40H168a40.12 40.12 0 00-40 40v24" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32"></path><circle cx="392" cy="184" r="24" fill="currentColor"></circle></svg>
+                    </span>
+                    <span class="tm_btn_text">Print</span>
+                </a>
+
+            </div>
+-->
+        </div>
+    </div>

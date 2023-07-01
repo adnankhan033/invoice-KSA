@@ -1,0 +1,13 @@
+{
+    "name": "invoice",
+    "type": "drupal-module",
+    "description": "Custom Invoice Module",
+    "keywords": [
+    ],
+    "homepage": "https://www.drupal.org/project/Invoice",
+    "minimum-stability": "dev",
+    "support": {
+        "issues": "https://www.drupal.org/project/issues/Invoice",
+        "source": "http://cgit.drupalcode.org/Invoice",
+    },
+}

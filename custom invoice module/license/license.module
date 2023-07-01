@@ -1,0 +1,125 @@
+<?php
+
+/**
+ * @file
+ * Contains license.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\Entity\Node;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\taxonomy\Entity\Term;
+/**
+ * Implements hook_help().
+ */
+function license_help($route_name, RouteMatchInterface $route_match) {
+    switch ($route_name) {
+            // Main module help for the license module.
+        case 'help.page.license':
+            $output = '';
+            $output .= '<h3>' . t('About') . '</h3>';
+            $output .= '<p>' . t('license module') . '</p>';
+            return $output;
+
+        default:
+    }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function license_theme() {
+    return [
+        'license' => [
+            'render element' => 'children',
+        ],
+    ];
+}
+
+function license_form_alter(&$form, FormStateInterface $form_state, $form_id)
+{
+
+
+    if($form_id =='node_buy_license_form'){
+
+        $currentUserAccount = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id());
+        $current_user_name = $currentUserAccount->getDisplayName();
+        $current_user_id = $currentUserAccount->id();
+
+        $crntDate = date('Y-m-d');
+        $form['title']['widget'][0]['value']['#default_value'] ="$current_user_name - $crntDate";
+        $form['title']['#disabled'] = TRUE;
+
+        //        kint($current_user_id);
+        //        exit;
+        $license_nodes = \Drupal::entityTypeManager()
+            ->getStorage('node')
+            ->loadByProperties(['type' => 'buy_license', 'uid' => $current_user_id]);
+
+        // Build the select list options array.
+        $options = [];
+        $current_date = new DrupalDateTime();
+        foreach ($license_nodes as $license_node) {
+            $options[$license_node->id()] = $license_node->getTitle();
+
+            $created_date = $license_node->getCreatedTime();
+            $buy_date = DrupalDateTime::createFromTimestamp($created_date);
+
+            // Calculate the difference between the buy_date and current_date.
+            $interval = $current_date->diff($buy_date);
+
+            // Get the difference in days.
+            $days_difference = $interval->days;
+            $selected_plane = $license_node->get('field_select_license_type')->getValue()[0]['target_id'];
+            $selected_term = Term::load($selected_plane);
+
+            if ($selected_term) {
+                $term_name = $selected_term->getName();
+                //                selected plane 1 year condition
+                if($term_name =='1 year'){
+                    // Check if the difference is less than 365 days (1 year).
+                    if ($days_difference < 365) {
+                        // Less than 1 year.
+                        //you have already subscription
+                        $plane_message ="You have 1 year already subscription</h2>";
+                        $plane_status = 'Activated';
+                    } else {
+                        //    you need to buy or renew plane
+                        // Greater than or equal to 1 year.
+                        $plane_message = "You need to buy or renew 1 year plane";
+                        $plane_status = "<div>Expired</div>";
+                    }
+                }  elseif($term_name =='2 year'){
+                    // Check if the difference is less than 365 days (2 year).
+                    if ($days_difference < 730) {
+                        // Less than 1 year.
+                        //you have already subscription
+                        $plane_message ="you have 2 year already subscription";
+                    } else {
+                        //    you need to buy or renew plane
+                        // Greater than or equal to 1 year.
+                        $plane_message ="you need to buy or renew 2 year plane";
+                        $plane_status = 'Expired';
+                    }
+                }
+            }
+        }
+
+        if($plane_status =='Activated'){
+            //        Activated plane
+            $form['status_heading'] = [
+                '#markup'=> "$plane_status <br>$plane_message",
+                '#weight'=> -1,
+            ];
+
+        }else{
+            //            expired plane
+            $form['status_heading'] = [
+                '#markup'=> "$plane_status <br>$plane_message",
+                '#weight'=> -1,
+            ];
+        }
+
+    }
+}

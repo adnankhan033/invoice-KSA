@@ -1,0 +1,15 @@
+form:
+  header: true
+  js:
+    
+payment:
+  css:
+    theme:
+      
+  js:
+    assets/js/jetpay-payment.js: { attributes: { defer: true } }
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupalSettings
+    - jetpay/form
